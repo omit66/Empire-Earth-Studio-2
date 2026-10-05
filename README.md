@@ -9,7 +9,7 @@ A better version of the original EEStudio, that hopefully will finally no longer
 - Empire Earth (CD / Retail)
 - Empire Earth AoC (Addon)
 - Empire Earth Gold Edition (GOG)
-- Empire Earth DOMW (SST only)
+- Empire Earth DOMW (SST only, `data.ssa` can be read and patched with the command line tool)
 
 ### How to install
 
@@ -31,6 +31,12 @@ pip3 install -r requirements.txt
 # run it
 python3 EEStudio2.py
 ```
+
+### Command line tool
+
+`src/eestool.py` works without PyQt5 and can rebuild SSTs from edited TGA / DDS parts and patch files in an SSA archive
+without touching anything else in it (used for HD texture packs of Empires: Dawn of the Modern World).
+Step by step guide (unpack, upscale, repack): [docs/HD-TEXTURES.md](docs/HD-TEXTURES.md). Tests: `python -m unittest discover -s tests`.
 
 ### Known limitations / bugs
 

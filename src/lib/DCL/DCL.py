@@ -12,7 +12,7 @@ import ctypes
 
 from io import BytesIO, BufferedReader, BufferedWriter
 
-from lib.Util import readInt, writeInt
+from lib.BinUtil import readInt, writeInt
 
 # return codes:
 CMP_NO_ERROR = 0
@@ -81,7 +81,7 @@ class DCL:
         else:
             dll = "libDCL.so"
 
-        self.libdcl = ctypes.CDLL(os.path.join(os.path.dirname(__file__), dll))
+        self.libdcl = ctypes.CDLL(DCL._findLibrary(dll))
 
         self.libdcl.decompressBytes.argtypes = [
             ctypes.c_char_p, ctypes.c_int, ctypes.c_char_p, ctypes.POINTER(ctypes.c_int)]
@@ -93,6 +93,22 @@ class DCL:
             ctypes.c_uint, ctypes.c_uint
         ]
         self.libdcl.compressBytes.restype = ctypes.c_int
+
+    @staticmethod
+    def _findLibrary(dll: str) -> str:
+        """looks for the DCL library next to this file, then in $EES_LIBDCL (file or folder)"""
+        candidates = [os.path.join(os.path.dirname(__file__), dll)]
+        extra = os.environ.get("EES_LIBDCL")
+        if extra:
+            candidates.append(extra if os.path.isfile(extra) else os.path.join(extra, dll))
+
+        for candidate in candidates:
+            if os.path.isfile(candidate) or os.path.isfile(candidate + ".dll"):
+                return candidate
+
+        raise FileNotFoundError(
+            f"{dll} not found (searched: {candidates}). Build it with the Makefile in lib/DCL "
+            "or set EES_LIBDCL to the library file or its folder (e.g. lib/DCL of the portable release).")
 
     def decompress(self) -> bytes:
         output = bytes(self.uncompressed_size)

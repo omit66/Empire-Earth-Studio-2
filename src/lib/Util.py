@@ -15,7 +15,7 @@ from pathlib import Path
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtWidgets import QMessageBox
 
-from io import BufferedReader, BufferedWriter
+from lib.BinUtil import readInt, writeInt, checkNullTerminator  # noqa: F401 (re-exported)
 
 from lib import constants as c
 
@@ -74,15 +74,3 @@ def showQuestionMSG(msg_str: str, title_msg="QUESTION") -> bool:
     reply = msg.exec()
 
     return reply == QMessageBox.Yes
-
-
-def readInt(f: BufferedReader) -> int:
-    return int.from_bytes(f.read(4), byteorder="little", signed=False)
-
-def writeInt(f: BufferedWriter, value: int) -> int:
-    return f.write(value.to_bytes(4, byteorder="little", signed=False))
-
-def checkNullTerminator(data: bytes) -> bytes:
-    if not data.endswith(b"\0"):
-        data += b"\0"
-    return data
