@@ -57,7 +57,7 @@ def pickSample(inDir: str, candidates: list[str], count: int, minSize: int, maxS
 
 
 def makePreview(inDir: str, outDir: str, names: list[str], models: list[str], factor: int, esrgan: str,
-                magick: str = "magick", rowsPerSheet: int = 5,
+                magick: str = "magick", rowsPerSheet: int = 5, plain: bool = False,
                 log: Optional[Callable[[str], None]] = None) -> list[str]:
     """writes compare_1.png, compare_2.png ... to outDir and returns their paths"""
     log = log or print
@@ -88,7 +88,11 @@ def makePreview(inDir: str, outDir: str, names: list[str], models: list[str], fa
             size = f"{width * factor}x{height * factor}!"
 
             tiles = []
-            for label, folder, filt in [("original", src, "Cubic")] + [(m, os.path.join(work, m), "Lanczos") for m in models]:
+            columns = [("original", src, "Cubic")]
+            if plain:  # plain resize without AI, the right thing for normal / bump maps
+                columns.append(("plain resize (no AI)", src, "Lanczos"))
+            columns += [(m, os.path.join(work, m), "Lanczos") for m in models]
+            for label, folder, filt in columns:
                 tile = os.path.join(work, f"t_{i}_{len(tiles)}.png")
                 _run([magick, os.path.join(folder, f"{i}.png"), "-filter", filt, "-resize", size,
                       "-resize", f"{TILE}x{TILE}", "-background", "#333", "-gravity", "center", "-extent", f"{TILE}x{TILE}",

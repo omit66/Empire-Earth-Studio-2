@@ -113,7 +113,8 @@ python eestool.py preview --orig D:\hd\in --out D:\hd\cmp --model realesr-animev
 ```
 
 Note that normal / bump maps (names ending in `_bm` or containing `bump`) are not pictures: an AI upscaler invents noise
-or smooths them, which changes the lighting in the game. Scale them with a plain resize instead.
+or smooths them, which changes the lighting in the game. Scale them with a plain resize instead: `upscale --plain` resizes with Lanczos and does not use the AI at all.
+`preview --plain --match bump` shows the difference.
 Every resolution of a texture is a separate part, so the small mip levels can be treated differently from the big ones
 (for example only upscale level 1 with the AI and let a script shrink it for the others).
 

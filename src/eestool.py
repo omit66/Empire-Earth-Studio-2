@@ -182,7 +182,7 @@ def cmdUpscale(args) -> int:
         names = [n for n in names if _stemOfPart(n) in stems]
     names = [n for n in names if _validPart(os.path.join(args.orig, n))]
     failed = upscale.upscaleParts(args.orig, args.out, names, args.factor, args.model, args.esrgan,
-                                  magick=args.magick, batch=args.batch, workers=args.workers)
+                                  magick=args.magick, batch=args.batch, workers=args.workers, plain=args.plain)
     print(f"{len(failed)} part(s) failed")
     for name in failed[:50]:
         print("  ", name)
@@ -195,6 +195,8 @@ def cmdPreview(args) -> int:
         stems = {sstparts.sstStem(n) for n in _readList(args.sst_list)}
         names = [n for n in names if _stemOfPart(n) in stems]
     names = [n for n in names if _validPart(os.path.join(args.orig, n))]
+    if args.match:
+        names = [n for n in names if args.match.lower() in n.lower()]
 
     sample = preview.pickSample(args.orig, names, args.count, args.min_size, args.max_size, args.seed)
     if not sample:
@@ -202,7 +204,8 @@ def cmdPreview(args) -> int:
         return 1
     print(f"{len(sample)} part(s) in the sample")
 
-    sheets = preview.makePreview(args.orig, args.out, sample, args.model, args.factor, args.esrgan, magick=args.magick)
+    sheets = preview.makePreview(args.orig, args.out, sample, args.model, args.factor, args.esrgan,
+                                 magick=args.magick, plain=args.plain)
     for sheet in sheets:
         print("  ", sheet)
     return 0
@@ -324,6 +327,7 @@ def main() -> int:
     p.add_argument("--sst-list", help="text file with SST names: only their parts are processed")
     p.add_argument("--factor", type=int, default=2, choices=(1, 2))
     p.add_argument("--model", default="realesr-animevideov3-x4")
+    p.add_argument("--plain", action="store_true", help="plain Lanczos resize, no AI (for normal / bump maps)")
     p.add_argument("--esrgan", required=True, help="path of realesrgan-ncnn-vulkan.exe (models folder next to it)")
     p.add_argument("--magick", default="magick")
     p.add_argument("--batch", type=int, default=200)
@@ -341,6 +345,8 @@ def main() -> int:
     p.add_argument("--min-size", type=int, default=64, help="smallest edge length of a sampled part")
     p.add_argument("--max-size", type=int, default=512)
     p.add_argument("--seed", type=int, default=1, help="same seed = same sample")
+    p.add_argument("--plain", action="store_true", help="add a column with a plain resize (no AI)")
+    p.add_argument("--match", help="only parts whose name contains this text, e.g. _bm")
     p.add_argument("--magick", default="magick")
     p.set_defaults(func=cmdPreview)
 

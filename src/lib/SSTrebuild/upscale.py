@@ -54,8 +54,8 @@ def _encode(magick: str, source: str, dst: str, bpp: int, fourcc: str) -> None:
 
 def upscaleParts(inDir: str, outDir: str, names: list[str], factor: int, model: str, esrgan: str,
                  magick: str = "magick", batch: int = 200, workers: int = 4,
-                 log: Optional[Callable[[str], None]] = None) -> list[str]:
-    """returns the names that failed"""
+                 log: Optional[Callable[[str], None]] = None, plain: bool = False) -> list[str]:
+    """returns the names that failed. plain=True resizes with Lanczos only, no AI (right for normal / bump maps)"""
     log = log or print
     if factor not in (1, 2):
         raise ValueError("factor has to be 1 or 2")
@@ -84,8 +84,8 @@ def upscaleParts(inDir: str, outDir: str, names: list[str], factor: int, model: 
                 src = os.path.join(inDir, name)
                 try:
                     width, height, bpp, fourcc = _size(src)
-                    if max(width, height) < MIN_AI_SIZE:
-                        if factor == 1:  # keep the original part
+                    if plain or max(width, height) < MIN_AI_SIZE:
+                        if factor == 1 and not plain:  # keep the original part
                             shutil.copyfile(src, os.path.join(outDir, name))
                             return name, None
                         tmp = os.path.join(pngIn, f"{i}_small.png")
